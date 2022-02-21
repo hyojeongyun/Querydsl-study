@@ -747,4 +747,41 @@ public class QuerydslBasicTest {
                 .execute();
     }
 
+    /**
+     * Member를 M으로 바꾸기
+     */
+    @Test
+    public void sqlFunction(){
+        List<String> result = queryFactory
+                .select(
+                        Expressions.stringTemplate(
+                                "function('replace', {0}, {1}, {2})",
+                                member.username, "Member", "M"))
+                .from(member)
+                .fetch();
+
+        for (String s : result) {
+            System.out.println("s = "+s);
+        }
+    }
+
+    /**
+     * 소문자로 바꾸기
+     */
+    @Test
+    public void sqlFunction2(){
+        List<String> result = queryFactory
+                .select(member.username)
+                .from(member)
+//                .where(member.username.eq(
+//                        Expressions.stringTemplate("function('lower', {0})", member.username)))
+                .where(member.username.eq(member.username.lower()))
+                .fetch();
+        for (String s : result) {
+            System.out.println("s = "+s);
+        }
+
+        //간단한 것들은 내장되어 있음.
+    }
+
 }
