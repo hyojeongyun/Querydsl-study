@@ -23,6 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -711,4 +712,39 @@ public class QuerydslBasicTest {
         return usernameEq(usernameCond).and(ageEq(ageCond));
         //null 체크 주의
     }
+
+    @Test
+    public void bulkUpdate(){
+        //member1과 member2 비회원으로 바뀜
+        long count = queryFactory
+                .update(member)
+                .set(member.username, "비회원")
+                .where(member.age.lt(28))
+                .execute();
+
+        //member1, 2, 3, 4 영속성 컨텍스트에 올라가 있음.
+        //db만 비회원으로 바뀜.
+        //영속성 컨텍스트와 db의 상태가 달라지게 됨.
+
+        em.flush();
+        em.clear();
+        //영속성 컨텍스트를 초기화 해주어야 함.
+    }
+
+    @Test
+    public void bulkAdd(){
+        long count = queryFactory
+                .update(member)
+                .set(member.age, member.age.add(1))  //곱하기는 .multiply
+                .execute();
+    }
+
+    @Test
+    public void bulkDelete(){
+        long count = queryFactory
+                .delete(member)
+                .where(member.age.gt(18))
+                .execute();
+    }
+
 }
