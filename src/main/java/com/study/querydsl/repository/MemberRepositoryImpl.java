@@ -2,10 +2,12 @@ package com.study.querydsl.repository;
 
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.study.querydsl.dto.MemberSearchCondition;
 import com.study.querydsl.dto.MemberTeamDto;
 import com.study.querydsl.dto.QMemberTeamDto;
+import com.study.querydsl.entity.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -110,7 +112,7 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        long total = queryFactory
+        JPAQuery<Member> countQuery = queryFactory
                 .select(member)
                 .from(member)
                 .leftJoin(member.team, team)
@@ -119,11 +121,13 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
                         teamNameEq(condition.getTeamName()),
                         ageGoe(condition.getAgeGoe()),
                         ageLoe(condition.getAgeLoe())
-                )
-                .fetchCount();
+                );
         //내가 직접 total count 쿼리를 날림
         //count쿼리에서 join이 필요가 없을 때 최적화 가능
 
-        return new PageImpl<>(content, pageable, total);
+        //return new PageImpl<>(content, pageable, total);
+
+        //countQuery 최적화
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
     }
 }
